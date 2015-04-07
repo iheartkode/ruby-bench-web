@@ -18,6 +18,9 @@ volumes:
   - volume:
       host: /var/discourse/discourse_docker/shared/rubybench
       guest: /shared
+  - volume:
+      host: /var/discourse/discourse_docker/shared/rubybench/rubybench/log/nginx
+      guest: /shared/log/nginx
 
 hooks:
   after_postgres:
@@ -84,6 +87,8 @@ hooks:
     - file:
         path: /etc/nginx/conf.d/rubybench.conf
         contents: |
+          access_log /shared/log/nginx/access.log;
+          error_log /shared/log/nginx/error.log;
           upstream rubybench {
             server localhost:3000;
           }
@@ -131,3 +136,13 @@ hooks:
         contents: |
           #!/bin/bash
           sv stop sidekiq
+
+    - replace:
+        filename: "/etc/logrotate.d/nginx"
+        from: "weekly"
+        to: "daily"
+
+    - replace:
+        filename: "/etc/logrotate.d/nginx"
+        from: "52"
+        to: "14"
